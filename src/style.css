@@ -1,0 +1,667 @@
+html,
+body,
+#root {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f4f7fb;
+    min-height: 100vh;
+    color: #222;
+    display: flex;
+    flex-direction: column;
+}
+
+#root {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.container {
+    display: flex;
+    flex: 1 1 auto;
+    overflow: hidden;
+    padding: 0 8px;
+    gap: 16px;
+    min-height: 0;
+    width: 100vw;
+    box-sizing: border-box;
+}
+
+header {
+    background-color: #2563eb;
+    color: #fff;
+    padding: 28px 0 28px 48px;
+    font-size: 32px;
+    font-weight: bold;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    letter-spacing: 2px;
+    border-radius: 0 0 24px 24px;
+}
+
+aside {
+    width: 300px;
+    background-color: #fff;
+    border-radius: 16px;
+    padding: 24px 16px;
+    box-shadow: 0 4px 24px rgba(37, 99, 235, 0.07);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 220px;
+}
+
+main {
+    flex: 1;
+    background-color: #fff;
+    border-radius: 16px;
+    padding: 16px 16px;
+    box-shadow: 0 4px 24px rgba(37, 99, 235, 0.07);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    overflow-y: auto;
+    min-width: 0;
+    min-height: 0;
+}
+
+footer {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 24px 0 16px 0;
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.footer-chatbox {
+    width: 100%;
+    max-width: 1200px;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 4px 24px rgba(37, 99, 235, 0.10);
+    padding: 18px 24px 12px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 0 auto;
+}
+
+#chat-history {
+    max-height: 140px;
+    overflow-y: auto;
+    margin-bottom: 8px;
+    padding-right: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.user-msg,
+.assistant-msg {
+    display: inline-block;
+    padding: 10px 18px;
+    border-radius: 16px;
+    max-width: 80%;
+    font-size: 15px;
+    line-height: 1.6;
+    word-break: break-all;
+}
+
+.user-msg {
+    background: linear-gradient(90deg, #2563eb 60%, #1d4ed8 100%);
+    color: #fff;
+    align-self: flex-end;
+}
+
+.assistant-msg {
+    background: #f1f5fb;
+    color: #222;
+    align-self: flex-start;
+    border: 1px solid #e0e7ef;
+}
+
+.footer-input-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+#chat-input {
+    flex: 1;
+    padding: 12px 18px;
+    border-radius: 18px;
+    border: 1.5px solid #e0e7ef;
+    background-color: #f9fafb;
+    color: #222;
+    font-size: 15px;
+    outline: none;
+    transition: border 0.2s, box-shadow 0.2s;
+    box-shadow: 0 1px 2px rgba(37, 99, 235, 0.03);
+}
+
+#chat-input:focus {
+    border: 1.5px solid #2563eb;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.07);
+}
+
+#send-button {
+    padding: 0 22px;
+    border-radius: 18px;
+    border: none;
+    background: linear-gradient(90deg, #2563eb 60%, #1d4ed8 100%);
+    color: #fff;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    box-shadow: 0 1px 4px rgba(37, 99, 235, 0.08);
+    transition: background 0.2s, box-shadow 0.2s;
+    height: 40px;
+    margin-left: 2px;
+}
+
+#send-button:hover {
+    background: linear-gradient(90deg, #1d4ed8 60%, #2563eb 100%);
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.13);
+}
+
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #E0E0E0;
+}
+
+.btn {
+    padding: 10px 22px;
+    border-radius: 16px;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    transition: background 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.07);
+}
+
+.btn-primary {
+    background: linear-gradient(90deg, #2563eb 60%, #1d4ed8 100%);
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(90deg, #1d4ed8 60%, #2563eb 100%);
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.13);
+}
+
+.btn-green {
+    background-color: #22c55e;
+    color: #fff;
+}
+
+.btn-green:hover {
+    background-color: #16a34a;
+}
+
+#project-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.project-item {
+    padding: 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    transition: all 0.2s;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(68, 68, 68, 0.03);
+}
+
+.project-item.selected {
+    background-color: #2563eb;
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.10);
+}
+
+.project-item.selected .project-details {
+    color: #fff;
+}
+
+.project-item:not(.selected):hover {
+    border-color: #2563eb;
+}
+
+.project-title {
+    font-weight: bold;
+    margin-bottom: 6px;
+    font-size: 18px;
+    color: #222;
+}
+
+.project-details {
+    font-size: 14px;
+    color: #888;
+}
+
+.empty-state {
+    text-align: center;
+    color: #888;
+    padding: 32px;
+}
+
+.empty-state-icon {
+    font-size: 54px;
+    margin-bottom: 18px;
+}
+
+#main-content>.empty-state {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.project-header {
+    padding-bottom: 18px;
+    border-bottom: 1.5px solid #ececec;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.project-header h2 {
+    font-size: 26px;
+    font-weight: 700;
+    margin: 0 0 6px 0;
+}
+
+.project-header p {
+    color: #888;
+    font-size: 15px;
+    margin: 0;
+}
+
+.tasks-section,
+.gantt-section {
+    background: #fafbfc;
+    border-radius: 12px;
+    box-shadow: 0 1px 4px rgba(68, 68, 68, 0.03);
+    padding: 16px 12px 12px 12px;
+}
+
+.section-header {
+    margin-bottom: 8px;
+}
+
+#task-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.task-item {
+    background-color: #FCFCFC;
+    border: 1px solid #E0E0E0;
+    border-radius: 14px;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.07);
+    padding: 15px;
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    grid-template-rows: auto auto auto;
+    gap: 5px 15px;
+    grid-template-areas:
+        "title status delete"
+        "desc desc desc"
+        "dates dates dates";
+    transition: box-shadow 0.2s, border 0.2s;
+}
+
+.task-item:hover {
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.13);
+    border-color: #2563eb;
+}
+
+.task-title {
+    grid-area: title;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.task-desc {
+    grid-area: desc;
+    font-size: 14px;
+    color: #555555;
+}
+
+.task-dates {
+    grid-area: dates;
+    font-size: 13px;
+    color: #6C757D;
+}
+
+.task-status {
+    grid-area: status;
+    justify-self: end;
+    align-self: start;
+}
+
+.task-delete {
+    grid-area: delete;
+    justify-self: end;
+    align-self: start;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    color: white;
+}
+
+.status-inprogress {
+    background-color: #FFC107;
+    color: #333;
+}
+
+.status-pending {
+    background-color: #17A2B8;
+}
+
+.status-completed {
+    background-color: #28A745;
+}
+
+
+/* Modal Styles */
+/* 需求弹窗专用样式 */
+.requirement-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.35);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.requirement-modal {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 24px #0002;
+    padding: 32px 28px 24px 28px;
+    min-width: 320px;
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow: auto;
+}
+
+/* 恢复/保留原有通用弹窗样式 */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.25);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 16px #0002;
+    padding: 24px 20px 16px 20px;
+    min-width: 300px;
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow: auto;
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 10% auto;
+    padding: 30px;
+    border: 1px solid #E0E0E0;
+    width: 80%;
+    max-width: 500px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+    margin-bottom: 20px;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid #E0E0E0;
+    box-sizing: border-box;
+}
+
+.modal-footer {
+    text-align: right;
+    margin-top: 20px;
+}
+
+.modal-footer .btn {
+    margin-left: 10px;
+}
+
+.btn-secondary {
+    background-color: #6C757D;
+    color: white;
+}
+
+@media (max-width: 1200px) {
+    .container {
+        flex-direction: column;
+        width: 100vw;
+        padding: 4px;
+        gap: 8px;
+    }
+
+    aside {
+        width: 100%;
+        flex-direction: row;
+        gap: 6px;
+        padding: 8px 2px;
+        margin-bottom: 6px;
+    }
+
+    main {
+        padding: 8px 2px;
+        gap: 8px;
+    }
+}
+
+@media (max-width: 900px) {
+    .footer-chatbox {
+        width: 100vw;
+        max-width: none;
+        padding: 10px 0 8px 0;
+        margin-left: 0;
+        margin-right: 0;
+    }
+}
+
+.gantt-task-name {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    font-size: 15px;
+    padding-left: 0;
+}
+
+.gantt-timeline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 24px;
+}
+
+.gantt-bar {
+    margin: 0 auto;
+}
+
+.gantt-day {
+    min-width: 45px;
+    text-align: center;
+    font-size: 15px;
+    color: #333;
+    border-left: 1px solid #bbb;
+    border-right: 1px solid #bbb;
+    background: #F8F9FA;
+}
+
+.empty-state.empty-state-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 340px;
+    min-height: 260px;
+    background: #f7faff;
+    border-radius: 18px;
+    box-shadow: 0 2px 12px rgba(37, 99, 235, 0.06);
+    margin: 18px 0 0 0;
+    padding: 32px 12px 24px 12px;
+}
+
+.empty-state-center .empty-state-icon {
+    font-size: 80px !important;
+    margin-bottom: 24px !important;
+}
+
+.gantt-weekend {
+    background: #ffeaea !important;
+    color: #d14343 !important;
+}
+
+.project-desc {
+    margin-top: 8px;
+    color: #4b5563;
+    font-size: 15px;
+    background: #f7faff;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-style: italic;
+    max-width: 600px;
+    word-break: break-all;
+}
+
+/* 新需求处理按钮和需求项样式优化 */
+.requirement-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.requirement-main {
+    flex: 1;
+    min-width: 0;
+}
+
+.requirement-resolve-btn {
+    border: none;
+    background: #27ae60;
+    color: #fff;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background 0.2s;
+    box-shadow: 0 1px 4px #0001;
+}
+
+.requirement-resolve-btn:hover {
+    background: #219150;
+}
+
+.btn-icon {
+    padding: 0;
+    min-width: 0;
+    min-height: 0;
+}
+
+/* 需求Tab按钮样式 */
+.tab-btn {
+    background: none;
+    border: none;
+    color: #888;
+    font-size: 15px;
+    padding: 4px 16px;
+    border-radius: 16px 16px 0 0;
+    margin-right: 2px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.tab-btn.active {
+    background: #e0f3e8;
+    color: #27ae60;
+    font-weight: bold;
+}
+
+.tab-btn:hover {
+    background: #f2f2f2;
+    color: #27ae60;
+}
+
+/* 分页条样式 */
+.pagination-bar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+}
