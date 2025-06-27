@@ -10,9 +10,9 @@ import ConfirmModal from './components/ConfirmModal';
 import RequirementModal from './components/RequirementModal';
 
 //开发环境使用本地api
-const API_BASE = 'http://localhost:8080/api';
+// const API_BASE = 'http://localhost:8080/api';
 //生产环境使用服务器api
-//const API_BASE = '/api';
+const API_BASE = '/api';
 
 
 function App() {
