@@ -18,6 +18,7 @@ a {
   color: #646cff;
   text-decoration: inherit;
 }
+
 a:hover {
   color: #535bf2;
 }
@@ -35,20 +36,26 @@ h1 {
   line-height: 1.1;
 }
 
-button {
+button,
+.btn {
   border-radius: 8px;
   border: 1px solid transparent;
   padding: 0.6em 1.2em;
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background: #2563eb;
+  color: #fff;
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: border-color 0.25s, background 0.25s;
 }
-button:hover {
-  border-color: #646cff;
+
+button:hover,
+.btn:hover {
+  border-color: #1d4ed8;
+  background: #1d4ed8;
 }
+
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
@@ -59,10 +66,50 @@ button:focus-visible {
     color: #213547;
     background-color: #ffffff;
   }
+
   a:hover {
     color: #747bff;
   }
-  button {
+
+  /* button {
     background-color: #f9f9f9;
-  }
+  } */
+}
+
+.btn-primary {
+  background: linear-gradient(90deg, #2563eb 60%, #1d4ed8 100%) !important;
+  color: #fff !important;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(90deg, #1d4ed8 60%, #2563eb 100%) !important;
+}
+
+.btn-green {
+  background-color: #22c55e !important;
+  color: #fff !important;
+}
+
+.btn-green:hover {
+  background-color: #16a34a !important;
+}
+
+.btn-blue {
+  background-color: #bdbdbd !important;
+  color: #fff !important;
+}
+
+.btn-blue:hover {
+  background-color: #9e9e9e !important;
+}
+
+
+
+.btn-gray {
+  background: #ececec !important;
+  color: #a73b3b !important;
+}
+
+.btn-gray:hover {
+  background: #cecdcd !important;
 }

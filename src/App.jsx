@@ -9,7 +9,11 @@ import ChatBox from './components/ChatBox';
 import ConfirmModal from './components/ConfirmModal';
 import RequirementModal from './components/RequirementModal';
 
+//开发环境使用本地api
 const API_BASE = 'http://localhost:8080/api';
+//生产环境使用服务器api
+//const API_BASE = '/api';
+
 
 function App() {
   const [projects, setProjects] = useState([]);
@@ -212,7 +216,7 @@ function App() {
       }))
     };
     try {
-      const res = await fetch('http://localhost:8080/api/ai/chat', {
+      const res = await fetch(`${API_BASE}/ai/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: input, context })

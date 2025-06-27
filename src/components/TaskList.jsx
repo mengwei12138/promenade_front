@@ -56,7 +56,7 @@ const TaskList = ({ tasks, onDelete, onEdit }) => {
                             <span className={`status-badge ${statusClass}`}>{status}</span>
                         </div>
                         <button className="task-delete" title="删除" onClick={() => onDelete(task.id)}>❌</button>
-                        <button className="task-edit" title="编辑" onClick={() => onEdit(task.id)} style={{ marginRight: 8 }}>✏️</button>
+                        <button className="btn btn-gray task-edit" title="编辑" onClick={() => onEdit(task.id)} style={{ marginRight: 8 }}>✏️</button>
                     </div>
                 );
             })}

@@ -56,7 +56,7 @@ function SortableProjectItem(props) {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
                     <button
-                        className="btn btn-blue"
+                        className="btn btn-gray"
                         style={{ marginBottom: 4 }}
                         onClick={e => { e.stopPropagation(); props.onRequestRequirement(props.project.id); }}
                     >提需求</button>
