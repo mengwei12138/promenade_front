@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import './style.css';
 import ProjectList from './components/ProjectList';
 import TaskList from './components/TaskList';
@@ -8,11 +8,13 @@ import TaskModal from './components/TaskModal';
 import ChatBox from './components/ChatBox';
 import ConfirmModal from './components/ConfirmModal';
 import RequirementModal from './components/RequirementModal';
+import AlignmentPage from './components/AlignmentPage';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 
 //开发环境使用本地api
-// const API_BASE = 'http://localhost:8080/api';
+const API_BASE = 'http://localhost:8080/api';
 //生产环境使用服务器api
-const API_BASE = '/api';
+// const API_BASE = '/api';
 
 
 function App() {
@@ -37,8 +39,14 @@ function App() {
   const REQUIREMENTS_PER_PAGE = 3;
   const [taskPage, setTaskPage] = useState(1);
   const TASKS_PER_PAGE = 4;
+  const [editLinkModalVisible, setEditLinkModalVisible] = useState(false);
+  const [editLinkInput, setEditLinkInput] = useState(localStorage.getItem('alignment_link') || 'https://alidocs.dingtalk.com/i/nodes/nYMoO1rWxaKRYr4MSKq0Oje6V47Z3je9?utm_scene=person_space');
+  const [editLinkError, setEditLinkError] = useState('');
+  const editLinkInputRef = useRef();
 
   const MANAGER_KEY = 'song';
+
+  const navigate = useNavigate();
 
   // 拉取项目数据
   useEffect(() => {
@@ -318,125 +326,152 @@ function App() {
   const pagedTasks = selectedProject ? selectedProject.tasks.slice((taskPage - 1) * TASKS_PER_PAGE, taskPage * TASKS_PER_PAGE) : [];
   useEffect(() => { setTaskPage(1); }, [selectedProjectId, projects]);
 
+  const handleShowEditLinkModal = () => {
+    setEditLinkInput(localStorage.getItem('alignment_link') || 'https://alidocs.dingtalk.com/i/nodes/nYMoO1rWxaKRYr4MSKq0Oje6V47Z3je9?utm_scene=person_space');
+    setEditLinkError('');
+    setEditLinkModalVisible(true);
+    setTimeout(() => {
+      if (editLinkInputRef.current) editLinkInputRef.current.focus();
+    }, 100);
+  };
+  const handleSaveEditLink = () => {
+    if (!editLinkInput.startsWith('http')) {
+      setEditLinkError('请输入有效的链接');
+      return;
+    }
+    localStorage.setItem('alignment_link', editLinkInput);
+    setEditLinkModalVisible(false);
+  };
+
   return (
     <div>
-      <header>Ξ 智驿未来项目管理</header>
-      <div className="container">
-        <aside>
-          <div className="sidebar-header">
-            <h3>项目列表</h3>
-            <button className="btn btn-primary" onClick={handleCreateProject}>+ 创建项目</button>
-          </div>
-          <ProjectList
-            projects={projects}
-            selectedId={selectedProjectId}
-            onSelect={handleSelectProject}
-            onCreate={handleCreateProject}
-            onDelete={handleDeleteProject}
-            isManager={isManager}
-            onSortProjects={handleSortProjects}
-            onRequestRequirement={handleRequestRequirement}
-          />
-        </aside>
-        <main id="main-content">
-          {/* 主内容区：项目详情、任务、甘特图、需求 */}
-          {selectedProject && (
-            <>
-              <div className="project-header">
-                <div>
-                  <h2>{selectedProject.name}</h2>
-                  <p>项目截止日期: {selectedProject.due_date ? selectedProject.due_date.split('T')[0] : ''}</p>
-                  {selectedProject.description && (
-                    <div className="project-desc">{selectedProject.description}</div>
-                  )}
-                </div>
-                <button
-                  className="btn btn-primary"
-                  onClick={handleEditProject}
-                  disabled={!selectedProject}
-                  title={!selectedProject ? '请先选择一个项目' : '编辑当前项目'}
-                >
-                  编辑项目
-                </button>
+      <header>Ξ 智驿未来项目管理
+        <button style={{ marginLeft: 24 }} className="btn btn-link" onClick={() => window.open(localStorage.getItem('alignment_link') || 'https://alidocs.dingtalk.com/i/nodes/nYMoO1rWxaKRYr4MSKq0Oje6V47Z3je9?utm_scene=person_space', '_blank', 'noopener,noreferrer')}>任务对齐</button>
+        {isManager && (
+          <button style={{ marginLeft: 8 }} className="btn btn-link" onClick={handleShowEditLinkModal}>修改链接</button>
+        )}
+      </header>
+      <Routes>
+        <Route path="/" element={
+          <div className="container">
+            <aside>
+              <div className="sidebar-header">
+                <h3>项目列表</h3>
+                <button className="btn btn-primary" onClick={handleCreateProject}>+ 创建项目</button>
               </div>
-              {/* 需求区 */}
-              <div className="requirements-section">
-                <div className="section-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div>
-                    <h3 style={{ display: 'inline-block', marginRight: 16 }}>项目需求</h3>
-                    <button
-                      className={`tab-btn${requirementTab === 'Pending' ? ' active' : ''}`}
-                      onClick={() => setRequirementTab('Pending')}
-                    >待办</button>
-                    <button
-                      className={`tab-btn${requirementTab === 'Resolved' ? ' active' : ''}`}
-                      onClick={() => setRequirementTab('Resolved')}
-                      style={{ marginLeft: 8 }}
-                    >已处理</button>
-                  </div>
-                  <div style={{ fontSize: 14, color: '#888' }}>
-                    共{filteredRequirements.length}条，{totalRequirementPages > 1 && `第${requirementPage}/${totalRequirementPages}页`}
-                  </div>
-                </div>
-                <ul className="requirement-list">
-                  {pagedRequirements.map(req => (
-                    <li key={req.id} className="requirement-item">
-                      <div className="requirement-main">
-                        <b>{req.content}</b>
-                        <div style={{ fontSize: 13, color: '#888' }}>提出人: {req.proposer} | {new Date(req.created_at).toLocaleString()} | 状态: {req.status === 'Resolved' ? '已处理' : '代办'}</div>
-                      </div>
-                      {isManager && req.status !== 'Resolved' && requirementTab === 'Pending' && (
-                        <button
-                          className="btn btn-icon btn-green requirement-resolve-btn"
-                          style={{ marginLeft: 12 }}
-                          title="标记为已处理"
-                          onClick={() => handleResolveRequirement(req.id)}
-                        >
-                          <span role="img" aria-label="处理">✔️</span>
-                        </button>
+              <ProjectList
+                projects={projects}
+                selectedId={selectedProjectId}
+                onSelect={handleSelectProject}
+                onCreate={handleCreateProject}
+                onDelete={handleDeleteProject}
+                isManager={isManager}
+                onSortProjects={handleSortProjects}
+                onRequestRequirement={handleRequestRequirement}
+              />
+            </aside>
+            <main id="main-content">
+              {/* 主内容区：项目详情、任务、甘特图、需求 */}
+              {selectedProject && (
+                <>
+                  <div className="project-header">
+                    <div>
+                      <h2>{selectedProject.name}</h2>
+                      <p>项目截止日期: {selectedProject.due_date ? selectedProject.due_date.split('T')[0] : ''}</p>
+                      {selectedProject.description && (
+                        <div className="project-desc">{selectedProject.description}</div>
                       )}
-                    </li>
-                  ))}
-                  {pagedRequirements.length === 0 && <li style={{ color: '#888', padding: 8 }}>暂无需求</li>}
-                </ul>
-                {/* 需求分页按钮 */}
-                {totalRequirementPages > 1 && (
-                  <div className="pagination-bar">
-                    <button className="btn" disabled={requirementPage === 1} onClick={() => setRequirementPage(requirementPage - 1)}>上一页</button>
-                    <button className="btn" disabled={requirementPage === totalRequirementPages} onClick={() => setRequirementPage(requirementPage + 1)}>下一页</button>
+                    </div>
+                    <button
+                      className="btn btn-primary"
+                      onClick={handleEditProject}
+                      disabled={!selectedProject}
+                      title={!selectedProject ? '请先选择一个项目' : '编辑当前项目'}
+                    >
+                      编辑项目
+                    </button>
                   </div>
-                )}
-              </div>
-              <div className="tasks-section">
-                <div className="section-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <h3>任务</h3>
-                  <div>
-                    <button className="btn btn-green" onClick={handleCreateTask}>+ 添加任务</button>
+                  {/* 需求区 */}
+                  <div className="requirements-section">
+                    <div className="section-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div>
+                        <h3 style={{ display: 'inline-block', marginRight: 16 }}>项目需求</h3>
+                        <button
+                          className={`tab-btn${requirementTab === 'Pending' ? ' active' : ''}`}
+                          onClick={() => setRequirementTab('Pending')}
+                        >待办</button>
+                        <button
+                          className={`tab-btn${requirementTab === 'Resolved' ? ' active' : ''}`}
+                          onClick={() => setRequirementTab('Resolved')}
+                          style={{ marginLeft: 8 }}
+                        >已处理</button>
+                      </div>
+                      <div style={{ fontSize: 14, color: '#888' }}>
+                        共{filteredRequirements.length}条，{totalRequirementPages > 1 && `第${requirementPage}/${totalRequirementPages}页`}
+                      </div>
+                    </div>
+                    <ul className="requirement-list">
+                      {pagedRequirements.map(req => (
+                        <li key={req.id} className="requirement-item">
+                          <div className="requirement-main">
+                            <b>{req.content}</b>
+                            <div style={{ fontSize: 13, color: '#888' }}>提出人: {req.proposer} | {new Date(req.created_at).toLocaleString()} | 状态: {req.status === 'Resolved' ? '已处理' : '代办'}</div>
+                          </div>
+                          {isManager && req.status !== 'Resolved' && requirementTab === 'Pending' && (
+                            <button
+                              className="btn btn-icon btn-green requirement-resolve-btn"
+                              style={{ marginLeft: 12 }}
+                              title="标记为已处理"
+                              onClick={() => handleResolveRequirement(req.id)}
+                            >
+                              <span role="img" aria-label="处理">✔️</span>
+                            </button>
+                          )}
+                        </li>
+                      ))}
+                      {pagedRequirements.length === 0 && <li style={{ color: '#888', padding: 8 }}>暂无需求</li>}
+                    </ul>
+                    {/* 需求分页按钮 */}
+                    {totalRequirementPages > 1 && (
+                      <div className="pagination-bar">
+                        <button className="btn" disabled={requirementPage === 1} onClick={() => setRequirementPage(requirementPage - 1)}>上一页</button>
+                        <button className="btn" disabled={requirementPage === totalRequirementPages} onClick={() => setRequirementPage(requirementPage + 1)}>下一页</button>
+                      </div>
+                    )}
                   </div>
-                </div>
-                <TaskList
-                  tasks={pagedTasks}
-                  onDelete={handleDeleteTask}
-                  onEdit={handleEditTask}
-                />
-                {/* 任务分页按钮 */}
-                {totalTaskPages > 1 && (
-                  <div className="pagination-bar">
-                    <button className="btn" disabled={taskPage === 1} onClick={() => setTaskPage(taskPage - 1)}>上一页</button>
-                    <button className="btn" disabled={taskPage === totalTaskPages} onClick={() => setTaskPage(taskPage + 1)}>下一页</button>
+                  <div className="tasks-section">
+                    <div className="section-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <h3>任务</h3>
+                      <div>
+                        <button className="btn btn-green" onClick={handleCreateTask}>+ 添加任务</button>
+                      </div>
+                    </div>
+                    <TaskList
+                      tasks={pagedTasks}
+                      onDelete={handleDeleteTask}
+                      onEdit={handleEditTask}
+                    />
+                    {/* 任务分页按钮 */}
+                    {totalTaskPages > 1 && (
+                      <div className="pagination-bar">
+                        <button className="btn" disabled={taskPage === 1} onClick={() => setTaskPage(taskPage - 1)}>上一页</button>
+                        <button className="btn" disabled={taskPage === totalTaskPages} onClick={() => setTaskPage(taskPage + 1)}>下一页</button>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-              <div className="gantt-section">
-                <div className="section-header">
-                  <h3>项目甘特图: {selectedProject.name}</h3>
-                </div>
-                <GanttChart project={selectedProject} />
-              </div>
-            </>
-          )}
-        </main>
-      </div>
+                  <div className="gantt-section">
+                    <div className="section-header">
+                      <h3>项目甘特图: {selectedProject.name}</h3>
+                    </div>
+                    <GanttChart project={selectedProject} />
+                  </div>
+                </>
+              )}
+            </main>
+          </div>
+        } />
+        <Route path="/alignment" element={<AlignmentPage isManager={isManager} requireManager={requireManager} />} />
+      </Routes>
       <ProjectModal
         visible={projectModalVisible}
         onClose={() => { setProjectModalVisible(false); setEditingProject(null); }}
@@ -473,6 +508,25 @@ function App() {
         onClose={() => setRequirementModalVisible(false)}
         onSave={handleSaveRequirement}
       />
+      {editLinkModalVisible && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h3>修改任务对齐链接</h3>
+            <input
+              ref={editLinkInputRef}
+              type="text"
+              value={editLinkInput}
+              onChange={e => setEditLinkInput(e.target.value)}
+              style={{ width: '90%', padding: 8, fontSize: 16, margin: '16px 0' }}
+            />
+            {editLinkError && <div style={{ color: 'red', marginBottom: 8 }}>{editLinkError}</div>}
+            <div style={{ textAlign: 'right' }}>
+              <button className="btn btn-green" onClick={handleSaveEditLink}>保存</button>
+              <button className="btn" style={{ marginLeft: 8 }} onClick={() => setEditLinkModalVisible(false)}>取消</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
