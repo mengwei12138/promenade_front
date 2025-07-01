@@ -15,4 +15,10 @@
     <script type="module" src="/src/main.jsx"></script>
 </body>
 
+<script>
+    if (location.pathname.endsWith('/index.html')) {
+        location.replace(location.pathname.replace('/index.html', '/'));
+    }
+</script>
+
 </html>
