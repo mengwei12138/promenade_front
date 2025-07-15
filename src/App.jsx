@@ -8,8 +8,8 @@ import TaskModal from './components/TaskModal';
 import ChatBox from './components/ChatBox';
 import ConfirmModal from './components/ConfirmModal';
 import RequirementModal from './components/RequirementModal';
-import AlignmentPage from './components/AlignmentPage';
 import { Routes, Route, useNavigate } from 'react-router-dom';
+
 
 //开发环境使用本地api
 const API_BASE = 'http://localhost:8080/api';
@@ -40,9 +40,11 @@ function App() {
   const [taskPage, setTaskPage] = useState(1);
   const TASKS_PER_PAGE = 4;
   const [editLinkModalVisible, setEditLinkModalVisible] = useState(false);
-  const [editLinkInput, setEditLinkInput] = useState(localStorage.getItem('alignment_link') || 'https://alidocs.dingtalk.com/i/nodes/nYMoO1rWxaKRYr4MSKq0Oje6V47Z3je9?utm_scene=person_space');
+  const [alignmentLink, setAlignmentLink] = useState('https://alidocs.dingtalk.com/i/nodes/nYMoO1rWxaKRYr4MSKq0Oje6V47Z3je9?utm_scene=person_space');
   const [editLinkError, setEditLinkError] = useState('');
   const editLinkInputRef = useRef();
+  const [taskTab, setTaskTab] = useState('Pending'); // 新增任务Tab状态
+  const [syncedProjectId, setSyncedProjectId] = useState(null); // 记录已同步的项目ID
 
   const MANAGER_KEY = 'song';
 
@@ -61,6 +63,7 @@ function App() {
     if ((data.data || []).length > 0 && !selectedProjectId) {
       setSelectedProjectId(data.data[0].id);
     }
+    setSyncedProjectId(null); // 每次拉取新项目后允许重新同步
   };
 
   const handleSelectProject = (id) => {
@@ -321,10 +324,38 @@ function App() {
   // 切换Tab时重置页码
   useEffect(() => { setRequirementPage(1); }, [requirementTab, requirements]);
 
-  // 任务分页
-  const totalTaskPages = selectedProject ? Math.ceil((selectedProject.tasks.length || 0) / TASKS_PER_PAGE) || 1 : 1;
-  const pagedTasks = selectedProject ? selectedProject.tasks.slice((taskPage - 1) * TASKS_PER_PAGE, taskPage * TASKS_PER_PAGE) : [];
-  useEffect(() => { setTaskPage(1); }, [selectedProjectId, projects]);
+  // 任务分页和筛选
+  const getAutoStatus = (task) => {
+    const now = new Date();
+    const start = task.start_date ? new Date(task.start_date) : null;
+    const end = task.end_date ? new Date(task.end_date) : null;
+    if (start && now < start) return 'Pending';
+    if (start && end && now >= start && now <= end) return 'In Progress';
+    if (end && now > end) return 'Completed';
+    return 'Pending';
+  };
+  // 自动同步任务状态到数据库
+  useEffect(() => {
+    if (!selectedProject || syncedProjectId === selectedProject.id) return;
+    let hasSync = false;
+    selectedProject.tasks.forEach(task => {
+      const autoStatus = getAutoStatus(task);
+      if (task.status !== autoStatus) {
+        hasSync = true;
+        fetch(`${API_BASE}/projects/${selectedProject.id}/tasks/${task.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: autoStatus })
+        });
+      }
+    });
+    if (selectedProject.id && !hasSync) setSyncedProjectId(selectedProject.id);
+    // 如果有同步，等下次fetchProjects后再标记为已同步
+  }, [selectedProject, syncedProjectId]);
+  const filteredTasks = selectedProject ? selectedProject.tasks.filter(t => (t.status || getAutoStatus(t)) === taskTab) : [];
+  const totalTaskPages = selectedProject ? Math.ceil((filteredTasks.length || 0) / TASKS_PER_PAGE) || 1 : 1;
+  const pagedTasks = filteredTasks.slice((taskPage - 1) * TASKS_PER_PAGE, taskPage * TASKS_PER_PAGE);
+  useEffect(() => { setTaskPage(1); }, [selectedProjectId, projects, taskTab]);
 
   const handleShowEditLinkModal = () => {
     setEditLinkInput(localStorage.getItem('alignment_link') || 'https://alidocs.dingtalk.com/i/nodes/nYMoO1rWxaKRYr4MSKq0Oje6V47Z3je9?utm_scene=person_space');
@@ -343,13 +374,16 @@ function App() {
     setEditLinkModalVisible(false);
   };
 
+  useEffect(() => {
+    fetch(`${API_BASE}/alignment-link`).then(res => res.json()).then(data => {
+      setAlignmentLink(data.link || 'https://alidocs.dingtalk.com/i/nodes/nYMoO1rWxaKRYr4MSKq0Oje6V47Z3je9?utm_scene=person_space');
+    });
+  }, []);
+
   return (
     <div>
       <header>Ξ 智驿未来项目管理
-        <button style={{ marginLeft: 24 }} className="btn btn-link" onClick={() => window.open(localStorage.getItem('alignment_link') || 'https://alidocs.dingtalk.com/i/nodes/nYMoO1rWxaKRYr4MSKq0Oje6V47Z3je9?utm_scene=person_space', '_blank', 'noopener,noreferrer')}>任务对齐</button>
-        {isManager && (
-          <button style={{ marginLeft: 8 }} className="btn btn-link" onClick={handleShowEditLinkModal}>修改链接</button>
-        )}
+        <button style={{ marginLeft: 24 }} className="btn btn-link" onClick={() => window.open(alignmentLink, '_blank', 'noopener,noreferrer')}>任务对齐</button>
       </header>
       <Routes>
         <Route path="/" element={
@@ -441,7 +475,12 @@ function App() {
                   </div>
                   <div className="tasks-section">
                     <div className="section-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <h3>任务</h3>
+                      <div>
+                        <h3 style={{ display: 'inline-block', marginRight: 16 }}>任务</h3>
+                        <button className={`tab-btn${taskTab === 'Pending' ? ' active' : ''}`} onClick={() => setTaskTab('Pending')}>待办</button>
+                        <button className={`tab-btn${taskTab === 'In Progress' ? ' active' : ''}`} onClick={() => setTaskTab('In Progress')} style={{ marginLeft: 8 }}>进行中</button>
+                        <button className={`tab-btn${taskTab === 'Completed' ? ' active' : ''}`} onClick={() => setTaskTab('Completed')} style={{ marginLeft: 8 }}>已完成</button>
+                      </div>
                       <div>
                         <button className="btn btn-green" onClick={handleCreateTask}>+ 添加任务</button>
                       </div>
@@ -470,7 +509,7 @@ function App() {
             </main>
           </div>
         } />
-        <Route path="/alignment" element={<AlignmentPage isManager={isManager} requireManager={requireManager} />} />
+        {/* 删除 /alignment 路由 */}
       </Routes>
       <ProjectModal
         visible={projectModalVisible}
