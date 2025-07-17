@@ -9,6 +9,7 @@ import ChatBox from './components/ChatBox';
 import ConfirmModal from './components/ConfirmModal';
 import RequirementModal from './components/RequirementModal';
 import { Routes, Route, useNavigate } from 'react-router-dom';
+import CalendarModal from './components/CalendarModal';
 
 
 //开发环境使用本地api
@@ -43,8 +44,10 @@ function App() {
   const [alignmentLink, setAlignmentLink] = useState('https://alidocs.dingtalk.com/i/nodes/nYMoO1rWxaKRYr4MSKq0Oje6V47Z3je9?utm_scene=person_space');
   const [editLinkError, setEditLinkError] = useState('');
   const editLinkInputRef = useRef();
-  const [taskTab, setTaskTab] = useState('Pending'); // 新增任务Tab状态
+  const [taskTab, setTaskTab] = useState('All'); // 默认显示全部
   const [syncedProjectId, setSyncedProjectId] = useState(null); // 记录已同步的项目ID
+  const [requirementLink, setRequirementLink] = useState('https://docs.qq.com/sheet/DSGtEdkRKeVhDZHVL?tab=BB08J2');
+  const [showCalendarModal, setShowCalendarModal] = useState(false);
 
   const MANAGER_KEY = 'song';
 
@@ -327,8 +330,8 @@ function App() {
   // 任务分页和筛选
   const getAutoStatus = (task) => {
     const now = new Date();
-    const start = task.start_date ? new Date(task.start_date) : null;
-    const end = task.end_date ? new Date(task.end_date) : null;
+    const start = task.start_time ? new Date(task.start_time) : (task.start_date ? new Date(task.start_date) : null);
+    const end = task.end_time ? new Date(task.end_time) : (task.end_date ? new Date(task.end_date) : null);
     if (start && now < start) return 'Pending';
     if (start && end && now >= start && now <= end) return 'In Progress';
     if (end && now > end) return 'Completed';
@@ -352,7 +355,12 @@ function App() {
     if (selectedProject.id && !hasSync) setSyncedProjectId(selectedProject.id);
     // 如果有同步，等下次fetchProjects后再标记为已同步
   }, [selectedProject, syncedProjectId]);
-  const filteredTasks = selectedProject ? selectedProject.tasks.filter(t => (t.status || getAutoStatus(t)) === taskTab) : [];
+  // 任务筛选
+  const filteredTasks = selectedProject ? (
+    taskTab === 'All'
+      ? selectedProject.tasks
+      : selectedProject.tasks.filter(t => (t.status || getAutoStatus(t)) === taskTab)
+  ) : [];
   const totalTaskPages = selectedProject ? Math.ceil((filteredTasks.length || 0) / TASKS_PER_PAGE) || 1 : 1;
   const pagedTasks = filteredTasks.slice((taskPage - 1) * TASKS_PER_PAGE, taskPage * TASKS_PER_PAGE);
   useEffect(() => { setTaskPage(1); }, [selectedProjectId, projects, taskTab]);
@@ -378,12 +386,41 @@ function App() {
     fetch(`${API_BASE}/alignment-link`).then(res => res.json()).then(data => {
       setAlignmentLink(data.link || 'https://alidocs.dingtalk.com/i/nodes/nYMoO1rWxaKRYr4MSKq0Oje6V47Z3je9?utm_scene=person_space');
     });
+    fetch(`${API_BASE}/requirement-link`).then(res => res.json()).then(data => {
+      setRequirementLink(data.link || 'https://docs.qq.com/sheet/DSGtEdkRKeVhDZHVL?tab=BB08J2');
+    });
   }, []);
+
+  // 传递给甘特图的任务列表，始终为当前分类下所有任务
+  const ganttTasks = filteredTasks;
 
   return (
     <div>
-      <header>Ξ 智驿未来项目管理
-        <button style={{ marginLeft: 24 }} className="btn btn-link" onClick={() => window.open(alignmentLink, '_blank', 'noopener,noreferrer')}>任务对齐</button>
+      <header style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div>
+          Ξ 智驿未来项目管理
+          <button style={{ marginLeft: 24 }} className="btn btn-link" onClick={() => window.open(alignmentLink, '_blank', 'noopener,noreferrer')}>任务对齐</button>
+          <button style={{ marginLeft: 8 }} className="btn btn-link" onClick={() => window.open(requirementLink, '_blank', 'noopener,noreferrer')}>需求管理</button>
+          <button style={{ marginLeft: 8 }} className="btn btn-link" onClick={() => window.open('http://118.24.54.116:9898/zentao/user-login.html', '_blank', 'noopener,noreferrer')}>禅道</button>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
+          <button
+            className="btn btn-icon"
+            style={{ fontSize: 22, background: 'none', border: 'none', color: '#2196f3', cursor: 'pointer', marginRight: 24 }}
+            title="任务日历"
+            onClick={() => setShowCalendarModal(true)}
+          >
+            <span role="img" aria-label="任务日历">🗓️</span>
+          </button>
+          <button
+            className="btn btn-icon"
+            style={{ fontSize: 22, background: 'none', border: 'none', color: '#ff9800', cursor: 'pointer', marginRight: 16 }}
+            title="操作验证"
+            onClick={() => setShowKeyModal(true)}
+          >
+            <span role="img" aria-label="操作验证">🛡️</span>
+          </button>
+        </div>
       </header>
       <Routes>
         <Route path="/" element={
@@ -477,7 +514,8 @@ function App() {
                     <div className="section-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div>
                         <h3 style={{ display: 'inline-block', marginRight: 16 }}>任务</h3>
-                        <button className={`tab-btn${taskTab === 'Pending' ? ' active' : ''}`} onClick={() => setTaskTab('Pending')}>待办</button>
+                        <button className={`tab-btn${taskTab === 'All' ? ' active' : ''}`} onClick={() => setTaskTab('All')}>全部</button>
+                        <button className={`tab-btn${taskTab === 'Pending' ? ' active' : ''}`} onClick={() => setTaskTab('Pending')} style={{ marginLeft: 8 }}>待办</button>
                         <button className={`tab-btn${taskTab === 'In Progress' ? ' active' : ''}`} onClick={() => setTaskTab('In Progress')} style={{ marginLeft: 8 }}>进行中</button>
                         <button className={`tab-btn${taskTab === 'Completed' ? ' active' : ''}`} onClick={() => setTaskTab('Completed')} style={{ marginLeft: 8 }}>已完成</button>
                       </div>
@@ -502,7 +540,7 @@ function App() {
                     <div className="section-header">
                       <h3>项目甘特图: {selectedProject.name}</h3>
                     </div>
-                    <GanttChart project={selectedProject} />
+                    <GanttChart project={{ ...selectedProject, tasks: ganttTasks }} />
                   </div>
                 </>
               )}
@@ -566,6 +604,11 @@ function App() {
           </div>
         </div>
       )}
+      <CalendarModal
+        visible={showCalendarModal}
+        onClose={() => setShowCalendarModal(false)}
+        tasks={projects.flatMap(p => p.tasks || [])}
+      />
     </div>
   );
 }

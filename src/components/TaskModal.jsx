@@ -6,18 +6,21 @@ const TaskModal = ({ visible, onClose, onSave, editingTask }) => {
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     const [description, setDescription] = useState('');
+    const [priority, setPriority] = useState('P2');
 
     useEffect(() => {
         if (editingTask) {
             setName(editingTask.name || '');
-            setStartDate(editingTask.start_date ? editingTask.start_date.split('T')[0] : '');
-            setEndDate(editingTask.end_date ? editingTask.end_date.split('T')[0] : '');
+            setStartDate(editingTask.start_time ? editingTask.start_time.split('T')[0] : (editingTask.start_date ? editingTask.start_date.split('T')[0] : ''));
+            setEndDate(editingTask.end_time ? editingTask.end_time.split('T')[0] : (editingTask.end_date ? editingTask.end_date.split('T')[0] : ''));
             setDescription(editingTask.description || '');
+            setPriority(editingTask.priority || 'P2');
         } else {
             setName('');
             setStartDate('');
             setEndDate('');
             setDescription('');
+            setPriority('P2');
         }
     }, [editingTask, visible]);
 
@@ -26,7 +29,7 @@ const TaskModal = ({ visible, onClose, onSave, editingTask }) => {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (!name.trim()) return;
-        onSave({ name: name.trim(), start_date: startDate, end_date: endDate, description });
+        onSave({ name: name.trim(), start_time: startDate, end_time: endDate, description, priority });
     };
 
     return (
@@ -49,6 +52,14 @@ const TaskModal = ({ visible, onClose, onSave, editingTask }) => {
                     <div className="form-group">
                         <label>描述</label>
                         <textarea value={description} onChange={e => setDescription(e.target.value)} />
+                    </div>
+                    <div className="form-group">
+                        <label>优先级</label>
+                        <select value={priority} onChange={e => setPriority(e.target.value)}>
+                            <option value="P0">P0（最高）</option>
+                            <option value="P1">P1</option>
+                            <option value="P2">P2（最低）</option>
+                        </select>
                     </div>
                     <div className="modal-actions">
                         <button type="button" className="btn" onClick={onClose}>取消</button>

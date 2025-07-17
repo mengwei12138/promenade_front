@@ -30,6 +30,12 @@ const getAutoStatus = (task) => {
     return 'Pending';
 };
 
+const priorityMap = {
+    P0: { color: 'red', icon: '⚡', label: 'P0' },
+    P1: { color: 'orange', icon: '▲', label: 'P1' },
+    P2: { color: 'gray', icon: '●', label: 'P2' },
+};
+
 const TaskList = ({ tasks, onDelete, onEdit }) => {
     if (!tasks || tasks.length === 0) {
         return (
@@ -42,14 +48,15 @@ const TaskList = ({ tasks, onDelete, onEdit }) => {
     return (
         <div id="task-list">
             {tasks.map(task => {
-                const status = getAutoStatus(task);
+                const status = task.status || getAutoStatus(task);
                 const statusClass = `status-${status.toLowerCase().replace(' ', '')}`;
+                const priority = priorityMap[task.priority] || priorityMap.P2;
                 return (
-                    <div className="task-item" key={task.id}>
+                    <div className="task-item" key={task.id} style={{ position: 'relative' }}>
                         <div className="task-title">{task.name}</div>
                         <div className="task-desc">{task.description}</div>
                         <div className="task-dates">
-                            <span><b>日期:</b> {formatDate(getDateField(task, 'start_date', 'startDate'))} - {formatDate(getDateField(task, 'end_date', 'endDate'))}</span> |
+                            <span><b>日期:</b> {formatDate(getDateField(task, 'start_time', 'startTime', 'start_date', 'startDate'))} - {formatDate(getDateField(task, 'end_time', 'endTime', 'end_date', 'endDate'))}</span> |
                             <span><b>创建于:</b> {formatDate(getDateField(task, 'created_at', 'createdAt'))}</span>
                         </div>
                         <div className="task-status">
@@ -57,6 +64,26 @@ const TaskList = ({ tasks, onDelete, onEdit }) => {
                         </div>
                         <button className="task-delete" title="删除" onClick={() => onDelete(task.id)}>❌</button>
                         <button className="btn btn-gray task-edit" title="编辑" onClick={() => onEdit(task.id)} style={{ marginRight: 8 }}>✏️</button>
+                        {/* 优先级显示 */}
+                        <span style={{
+                            position: 'absolute',
+                            right: 10,
+                            bottom: 10,
+                            color: priority.color,
+                            background: '#fff',
+                            borderRadius: 8,
+                            // border: `2px solid ${priority.color}`, // 移除边框
+                            padding: '4px 12px',
+                            fontSize: 16,
+                            fontWeight: 'bold',
+                            display: 'flex',
+                            alignItems: 'center',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
+                            zIndex: 2
+                        }} title={`优先级：${priority.label}`}>
+                            <span style={{ marginRight: 6, fontSize: 22, fontWeight: 'bold', lineHeight: 1 }}>{priority.icon}</span>
+                            <span style={{ letterSpacing: 1 }}>{priority.label}</span>
+                        </span>
                     </div>
                 );
             })}
